@@ -1,0 +1,12 @@
+version: "3.9"
+
+services:
+  api:
+    build:
+      context: ../
+      dockerfile: build/api.Dockerfile
+    env_file: ../config/.env
+    restart: always
+    ports:
+      - "9053:9053"
+
