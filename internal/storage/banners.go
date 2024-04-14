@@ -46,6 +46,7 @@ RETURNING id;`
 	if err != nil {
 		return -1, err
 	}
+	rows.Next()
 	err = rows.Scan(&id)
 	return id, err
 }

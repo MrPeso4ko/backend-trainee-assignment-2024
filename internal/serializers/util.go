@@ -1,41 +1,18 @@
 package serializers
 
 import (
+	"database/sql/driver"
 	"encoding/json"
-	"fmt"
+	"errors"
 )
 
-type dbSlice []int
-
-func (s *dbSlice) Scan(src any) error {
-	fmt.Println("HERE")
-	var srcBytes []byte
-	switch v := src.(type) {
-	case []byte:
-		srcBytes = v
-	case string:
-		srcBytes = []byte(v)
+func (b *BannerContent) Scan(value any) error {
+	v, ok := value.([]byte)
+	if !ok {
+		return errors.New("type assertion to []byte failed")
 	}
-	return json.Unmarshal(srcBytes, s)
+	return json.Unmarshal(v, &b)
 }
-
-func (b *BannerContent) Scan(src any) error {
-	fmt.Println("HERE")
-	var srcBytes []byte
-	switch v := src.(type) {
-	case []byte:
-		srcBytes = v
-	case string:
-		srcBytes = []byte(v)
-	}
-	return json.Unmarshal(srcBytes, b)
-}
-
-type bannerContentString struct {
-	string
-}
-
-func (s *bannerContentString) UnmarshalJSON(b []byte) error {
-	s.string = string(b)
-	return nil
+func (b BannerContent) Value() (driver.Value, error) {
+	return json.Marshal(b)
 }

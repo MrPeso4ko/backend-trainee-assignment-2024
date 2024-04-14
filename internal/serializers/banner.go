@@ -20,7 +20,7 @@ type BannerRequest struct {
 
 type BannerContent map[string]any
 type BannerBase struct {
-	TagIds    dbSlice       `json:"tag_ids" db:"tag_ids"`
+	TagIds    pq.Int32Array `json:"tag_ids" db:"tag_ids"`
 	FeatureID int           `json:"feature_id" db:"feature_id"`
 	Content   BannerContent `json:"content" db:"content"`
 	IsActive  bool          `json:"is_active" db:"is_active"`

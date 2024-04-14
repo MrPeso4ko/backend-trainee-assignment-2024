@@ -78,5 +78,5 @@ func createBanner(db *sqlx.DB, context *gin.Context) {
 		return
 	}
 
-	context.JSON(http.StatusOK, gin.H{"banner_id": bannerId})
+	context.JSON(http.StatusCreated, gin.H{"banner_id": bannerId})
 }
