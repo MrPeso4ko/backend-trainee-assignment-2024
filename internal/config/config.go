@@ -3,12 +3,20 @@ package config
 import (
 	"backend-trainee-assignment-2024/m/pkg/logging"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"os"
 	"strconv"
 )
 
 var logger = logging.GetLogger()
 
+func init() {
+	if mode, ok := os.LookupEnv("MODE"); ok {
+		if mode == "prod" {
+			gin.SetMode(gin.ReleaseMode)
+		}
+	}
+}
 func GetPostgresDSN() string {
 	user, ok := os.LookupEnv("POSTGRES_USER")
 	if !ok {

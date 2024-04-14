@@ -29,6 +29,14 @@ func StartAPIServer() {
 		getUserBanner(db, c)
 	})
 
+	adminGroup := r.Group("")
+	adminGroup.GET("/banner", func(c *gin.Context) {
+		getBanners(db, c)
+	})
+	adminGroup.POST("/banner", func(c *gin.Context) {
+		createBanner(db, c)
+	})
+
 	err = r.Run(config.GetAPIAddress())
 	if err != nil {
 		logger.Errorf("Error starting server: %+v", err)

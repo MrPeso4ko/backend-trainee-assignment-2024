@@ -1,33 +1,30 @@
 package api
 
 import (
+	"backend-trainee-assignment-2024/m/internal/serializers"
 	"backend-trainee-assignment-2024/m/internal/storage"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
 	"net/http"
-	"strconv"
 )
 
 func getUserBanner(db *sqlx.DB, context *gin.Context) {
-	logger.Info("getting segments...")
+	logger.Info("Getting user banner")
 
-	featureId, err := strconv.Atoi(context.Query("feature_id"))
+	req := serializers.UserBannerRequest{}
+	err := context.ShouldBindQuery(&req)
 	if err != nil {
-		logger.Errorf("Can't convert feature_id to int: %+v", err)
-		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "invalid feature_id"})
+		logger.Errorf("Couldn't bind query: %+v", err)
+		context.AbortWithStatusJSON(http.StatusBadRequest,
+			gin.H{"error": fmt.Sprintf("Wrong argument: %s", err.Error())})
 		return
 	}
-
-	tagId, err := strconv.Atoi(context.Query("tag_id"))
+	logger.Debugf("Got request: %+v", req)
+	banner, err := storage.GetUserBanner(db, req)
 	if err != nil {
-		logger.Errorf("Can't convert tag_id to int: %+v", err)
-		context.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": "invalid tag_id"})
-		return
-	}
-	banner, err := storage.GetBanner(db, featureId, tagId)
-	if err != nil {
-		logger.Errorf("Can't get banner for %d/%d : %+v", featureId, tagId, err)
-		context.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": true, "message": "internal error"})
+		logger.Errorf("Can't get banner for %d/%d : %+v", req.FeatureId, req.TagId, err)
+		context.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
 		return
 	}
 	if banner == nil {
@@ -37,4 +34,49 @@ func getUserBanner(db *sqlx.DB, context *gin.Context) {
 
 	context.JSON(http.StatusOK, banner)
 	logger.Info("success")
+}
+
+func getBanners(db *sqlx.DB, context *gin.Context) {
+	logger.Info("Getting user banner")
+
+	req := serializers.BannerRequest{}
+	err := context.ShouldBindQuery(&req)
+	if err != nil {
+		logger.Errorf("Couldn't bind query: %+v", err)
+		context.AbortWithStatusJSON(http.StatusBadRequest,
+			gin.H{"error": fmt.Sprintf("Wrong argument: %s", err.Error())})
+		return
+	}
+	logger.Debugf("Got request: %+v", req)
+	banners, err := storage.GetBanners(db, req)
+	if err != nil {
+		logger.Errorf("Can't get banners for %v/%v : %+v", req.FeatureId, req.TagId, err)
+		context.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+		return
+	}
+
+	context.JSON(http.StatusOK, banners)
+	logger.Info("success")
+}
+
+func createBanner(db *sqlx.DB, context *gin.Context) {
+	logger.Info("creating banner")
+
+	banner := serializers.BannerCreate{}
+	err := context.ShouldBindJSON(&banner)
+	if err != nil {
+		logger.Errorf("Couldn't bind JSON: %+v", err)
+		context.AbortWithStatusJSON(http.StatusBadRequest,
+			gin.H{"error": fmt.Sprintf("Wrong argument: %s", err.Error())})
+		return
+	}
+
+	bannerId, err := storage.CreateBanner(db, banner)
+	if err != nil {
+		logger.Errorf("Can't create banner %+v: %+v", banner, err)
+		context.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "internal error"})
+		return
+	}
+
+	context.JSON(http.StatusOK, gin.H{"banner_id": bannerId})
 }
